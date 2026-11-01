@@ -44,15 +44,15 @@
       font-size: 9pt !important;
       line-height: 1.25;
     }
-    /* Baris J (Jam) dan F (Paraf) dan sel isian diatur tinggi 25 pt dan lebar 25 pt */
+    /* Baris J (Jam) dan F (Paraf) dikembalikan ke tinggi 22 pt, lebar kotak tanggal 25 pt */
     tr.row-absen-entry td {
-      height: 25pt !important;
-      min-height: 25pt !important;
+      height: 22pt !important;
+      min-height: 22pt !important;
     }
     .col-tgl-cell {
-      width: 25pt !important;
-      min-width: 25pt !important;
-      max-width: 25pt !important;
+      width: 35pt !important;
+      min-width: 35pt !important;
+      max-width: 35pt !important;
     }
     /* Sabtu dan Ahad tetap merah */
     .weekend-col {
@@ -109,13 +109,13 @@
         break-inside: avoid !important;
       }
       tr.row-absen-entry td {
-        height: 25pt !important;
-        min-height: 25pt !important;
+        height: 22pt !important;
+        min-height: 22pt !important;
       }
       .col-tgl-cell {
-        width: 25pt !important;
-        min-width: 25pt !important;
-        max-width: 25pt !important;
+        width: 35pt !important;
+        min-width: 35pt !important;
+        max-width: 35pt !important;
       }
       .footer-sign-section {
         page-break-inside: avoid !important;
@@ -211,6 +211,29 @@
           <select id="tahunSelect" onchange="renderTable()" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block p-2">
             <!-- Diisi lewat JS dari 2024 s/d 2035 -->
           </select>
+        </div>
+
+        <!-- Pengatur Ukuran Kotak Tanggal (Tinggi & Lebar) Mandiri -->
+        <div class="flex items-center gap-3 bg-emerald-50/70 p-2 rounded-lg border border-emerald-200">
+          <div>
+            <label class="block text-[11px] font-bold text-emerald-800 uppercase tracking-wider mb-0.5">
+              Lebar Tgl (pt)
+            </label>
+            <div class="flex items-center gap-1">
+              <input type="number" id="inputLebarTanggal" value="35" min="15" max="80" step="1" oninput="updateUkuranKotak()" class="w-16 bg-white border border-emerald-400 text-gray-900 text-xs rounded p-1.5 font-bold text-center focus:ring-1 focus:ring-emerald-600">
+              <span class="text-[10px] text-gray-500 font-semibold">pt</span>
+            </div>
+          </div>
+
+          <div class="border-l border-emerald-300 pl-3">
+            <label class="block text-[11px] font-bold text-emerald-800 uppercase tracking-wider mb-0.5">
+              Tinggi Baris (pt)
+            </label>
+            <div class="flex items-center gap-1">
+              <input type="number" id="inputTinggiBaris" value="22" min="14" max="60" step="1" oninput="updateUkuranKotak()" class="w-16 bg-white border border-emerald-400 text-gray-900 text-xs rounded p-1.5 font-bold text-center focus:ring-1 focus:ring-emerald-600">
+              <span class="text-[10px] text-gray-500 font-semibold">pt</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -607,6 +630,58 @@
       nip: "198009012005011004"
     };
 
+    // State Ukuran Kotak Tanggal & Tinggi Baris (Tersimpan di LocalStorage)
+    let ukuranCustom = JSON.parse(localStorage.getItem('mtsn_ukuran_kotak')) || {
+      lebarTgl: 35,
+      tinggiBaris: 22
+    };
+
+    function updateUkuranKotak() {
+      const lebarInput = parseFloat(document.getElementById('inputLebarTanggal').value) || 35;
+      const tinggiInput = parseFloat(document.getElementById('inputTinggiBaris').value) || 22;
+
+      ukuranCustom.lebarTgl = lebarInput;
+      ukuranCustom.tinggiBaris = tinggiInput;
+      localStorage.setItem('mtsn_ukuran_kotak', JSON.stringify(ukuranCustom));
+
+      applyUkuranKotakStyle();
+    }
+
+    function applyUkuranKotakStyle() {
+      let dynStyle = document.getElementById('dynamic-box-style');
+      if (!dynStyle) {
+        dynStyle = document.createElement('style');
+        dynStyle.id = 'dynamic-box-style';
+        document.head.appendChild(dynStyle);
+      }
+
+      const lebar = ukuranCustom.lebarTgl;
+      const tinggi = ukuranCustom.tinggiBaris;
+
+      dynStyle.innerHTML = `
+        tr.row-absen-entry td {
+          height: ${tinggi}pt !important;
+          min-height: ${tinggi}pt !important;
+        }
+        .col-tgl-cell {
+          width: ${lebar}pt !important;
+          min-width: ${lebar}pt !important;
+          max-width: ${lebar}pt !important;
+        }
+        @media print {
+          tr.row-absen-entry td {
+            height: ${tinggi}pt !important;
+            min-height: ${tinggi}pt !important;
+          }
+          .col-tgl-cell {
+            width: ${lebar}pt !important;
+            min-width: ${lebar}pt !important;
+            max-width: ${lebar}pt !important;
+          }
+        }
+      `;
+    }
+
     // --- MODAL UTILITIES ---
     function openModal(id) {
       const modal = document.getElementById(id);
@@ -784,7 +859,7 @@
         <th rowspan="2" style="width: 26px;">NO</th>
         <th rowspan="2" class="col-nama-nip" style="width: 220px; text-align: center;">NAMA / NIP</th>
         <th rowspan="2" style="width: 44px;">GOL</th>
-        <th colspan="2" rowspan="2" style="width: 50pt;">&nbsp;</th>
+        <th colspan="2" rowspan="2" style="width: 32px;">&nbsp;</th>
         <th colspan="${jmlHari}" style="letter-spacing: 2px;">TANGGAL</th>
         <th rowspan="2" style="width: 26px;">%</th>
         <th colspan="6">JUMLAH</th>
@@ -835,8 +910,8 @@
             </td>
             <td class="col-nama-nip" style="text-align: left; padding-left: 4px; font-weight: bold; font-size: 9pt;">${p.nama}</td>
             <td rowspan="2" class="align-middle font-medium">${p.gol || '-'}</td>
-            <td rowspan="2" style="width: 25pt; font-weight: bold; background: #fafafa;">M</td>
-            <td style="width: 25pt; font-size: 8px; font-weight: bold;">J</td>`;
+            <td rowspan="2" style="width: 16px; font-weight: bold; background: #fafafa;">M</td>
+            <td style="width: 16px; font-size: 8px; font-weight: bold;">J</td>`;
           // Sel tanggal Masuk-Jam
           hariInfo.forEach(h => {
             const cls = 'col-tgl-cell ' + (h.isWeekend ? 'weekend-col' : (h.isHoliday ? 'holiday-col' : ''));
@@ -857,7 +932,7 @@
           // BARIS 2: F (Farap / Paraf Masuk)
           html += `<tr class="row-absen-entry">
             <td class="col-nama-nip" style="text-align: left; padding-left: 4px; font-size: 9pt;">NIP: ${p.nip && p.nip !== '-' ? p.nip : '-'}</td>
-            <td style="width: 25pt; font-size: 8px; font-weight: bold;">F</td>`;
+            <td style="width: 16px; font-size: 8px; font-weight: bold;">F</td>`;
           hariInfo.forEach(h => {
             const cls = 'col-tgl-cell ' + (h.isWeekend ? 'weekend-col' : (h.isHoliday ? 'holiday-col' : ''));
             html += `<td class="${cls} editable-cell" contenteditable="true"></td>`;
@@ -877,8 +952,8 @@
           html += `<tr class="row-absen-entry">
             <td rowspan="2" class="col-nama-nip" style="background: #fafafa;"></td>
             <td rowspan="2" style="background: #fafafa;"></td>
-            <td rowspan="2" style="width: 25pt; font-weight: bold; background: #fafafa;">P</td>
-            <td style="width: 25pt; font-size: 8px; font-weight: bold;">J</td>`;
+            <td rowspan="2" style="width: 16px; font-weight: bold; background: #fafafa;">P</td>
+            <td style="width: 16px; font-size: 8px; font-weight: bold;">J</td>`;
           hariInfo.forEach(h => {
             const cls = 'col-tgl-cell ' + (h.isWeekend ? 'weekend-col' : (h.isHoliday ? 'holiday-col' : ''));
             html += `<td class="${cls} editable-cell" contenteditable="true"></td>`;
@@ -896,7 +971,7 @@
 
           // BARIS 4: F (Farap / Paraf Pulang)
           html += `<tr class="row-absen-entry">
-            <td style="width: 25pt; font-size: 8px; font-weight: bold;">F</td>`;
+            <td style="width: 16px; font-size: 8px; font-weight: bold;">F</td>`;
           hariInfo.forEach(h => {
             const cls = 'col-tgl-cell ' + (h.isWeekend ? 'weekend-col' : (h.isHoliday ? 'holiday-col' : ''));
             html += `<td class="${cls} editable-cell" contenteditable="true"></td>`;
@@ -1219,17 +1294,18 @@
 
       // 3. BODY DATA PEGAWAI (Setiap personil 4 baris, row height 25 pt agar sangat leluasa tulis jam & paraf)
       let currentRow = 7;
+      const tinggiExcel = ukuranCustom.tinggiBaris || 22;
       filteredPegawai.forEach((p, idx) => {
         const r1 = currentRow;
         const r2 = currentRow + 1;
         const r3 = currentRow + 2;
         const r4 = currentRow + 3;
 
-        // Set row height disesuaikan tepat 25 pt untuk tiap baris
-        ws.getRow(r1).height = 25;
-        ws.getRow(r2).height = 25;
-        ws.getRow(r3).height = 25;
-        ws.getRow(r4).height = 25;
+        // Set row height sesuai ukuran custom yang ditentukan pengguna
+        ws.getRow(r1).height = tinggiExcel;
+        ws.getRow(r2).height = tinggiExcel;
+        ws.getRow(r3).height = tinggiExcel;
+        ws.getRow(r4).height = tinggiExcel;
 
         // Merge Kolom NO (r1..r4, col 1)
         ws.mergeCells(r1, 1, r4, 1);
@@ -1374,12 +1450,13 @@
       ws.getColumn(1).width = 4.5;   // NO
       ws.getColumn(2).width = 27.6;  // LEBAR KOLOM NAMA / NIP TEPAT 27.6 SAMPAI BAWAH
       ws.getColumn(3).width = 6.5;   // GOL
-      ws.getColumn(4).width = 4.5;   // M/P (setara 25pt)
-      ws.getColumn(5).width = 4.5;   // J/F (setara 25pt)
+      ws.getColumn(4).width = 3.5;   // M/P
+      ws.getColumn(5).width = 3.5;   // J/F
       
-      // LEBAR KOLOM TANGGAL (setara 25pt ~ 4.5 karakter Excel)
+      // LEBAR KOTAK TANGGAL OTOMATIS SESUAI NILAI INPUT (Konversi pt ke unit lebar karakter Excel: 35pt ≈ 6.0)
+      const lebarCharExcel = Math.max(2.6, (ukuranCustom.lebarTgl / 35) * 6.0);
       for (let i = 0; i < jmlHari; i++) {
-        ws.getColumn(6 + i).width = 4.5;
+        ws.getColumn(6 + i).width = parseFloat(lebarCharExcel.toFixed(1));
       }
       ws.getColumn(pctCol).width = 4.5;
       
@@ -1397,6 +1474,11 @@
 
     // --- INISIALISASI SAAT HALAMAN DIMUAT ---
     window.onload = function() {
+      // Pasang nilai awal input ukuran dari state yang tersimpan
+      document.getElementById('inputLebarTanggal').value = ukuranCustom.lebarTgl || 35;
+      document.getElementById('inputTinggiBaris').value = ukuranCustom.tinggiBaris || 22;
+      applyUkuranKotakStyle();
+
       const tahunSelect = document.getElementById('tahunSelect');
       tahunSelect.innerHTML = '';
       for (let y = 2024; y <= 2035; y++) {
