@@ -39,10 +39,15 @@
       background-color: #ffffff;
       font-weight: bold;
     }
-    /* Khusus kolom NAMA / NIP ukuran font 9 pt */
+    /* Khusus kolom NAMA / NIP dibuat ngepas presisi dengan "Rinni Juliati Simanungkalit, S.Pd." */
     .col-nama-nip {
-      font-size: 9pt !important;
-      line-height: 1.25;
+      font-size: 8.5pt !important;
+      line-height: 1.15;
+      white-space: nowrap;
+      padding: 1px 3px !important;
+      width: 188px !important;
+      min-width: 188px !important;
+      max-width: 188px !important;
     }
     /* Baris J (Jam) dan F (Paraf) dikembalikan ke tinggi 22 pt, lebar kotak tanggal 25 pt */
     tr.row-absen-entry td {
@@ -853,17 +858,17 @@
       // Filter Pegawai sesuai kategori
       const filteredPegawai = listPegawai.filter(p => p.kategori === kategori);
 
-      // Bangun Header Tabel
+      // Bangun Header Tabel: Kolom Nama, Golongan, dan Ket dibuat ringkas & ngepas
       let html = `<thead>`;
       html += `<tr>
-        <th rowspan="2" style="width: 26px;">NO</th>
-        <th rowspan="2" class="col-nama-nip" style="width: 220px; text-align: center;">NAMA / NIP</th>
-        <th rowspan="2" style="width: 44px;">GOL</th>
-        <th colspan="2" rowspan="2" style="width: 32px;">&nbsp;</th>
+        <th rowspan="2" style="width: 22px;">NO</th>
+        <th rowspan="2" class="col-nama-nip" style="text-align: center;">NAMA / NIP</th>
+        <th rowspan="2" style="width: 32px;">GOL</th>
+        <th colspan="2" rowspan="2" style="width: 26px;">&nbsp;</th>
         <th colspan="${jmlHari}" style="letter-spacing: 2px;">TANGGAL</th>
-        <th rowspan="2" style="width: 26px;">%</th>
+        <th rowspan="2" style="width: 22px;">%</th>
         <th colspan="6">JUMLAH</th>
-        <th rowspan="2" style="width: 58px;">KET</th>
+        <th rowspan="2" style="width: 38px;">KET</th>
       </tr>`;
 
       // Header Baris 2 (Tanggal 01..N, S, I, C, DL, TB, TK)
@@ -1314,11 +1319,11 @@
 
         // NAMA & NIP
         ws.getCell(r1, 2).value = p.nama;
-        ws.getCell(r1, 2).font = { name: 'Arial', size: 9, bold: true };
+        ws.getCell(r1, 2).font = { name: 'Arial', size: 8.5, bold: true };
         ws.getCell(r1, 2).alignment = { horizontal: 'left', vertical: 'middle' };
 
         ws.getCell(r2, 2).value = "NIP: " + (p.nip || "-");
-        ws.getCell(r2, 2).font = { name: 'Arial', size: 9 };
+        ws.getCell(r2, 2).font = { name: 'Arial', size: 8 };
         ws.getCell(r2, 2).alignment = { horizontal: 'left', vertical: 'middle' };
 
         // Blank space di bawah nama (baris 3 & 4)
@@ -1446,25 +1451,25 @@
       ws.getCell(bwhRow + 5, ttdColStart).font = { name: 'Arial', size: 7.5 };
       ws.getCell(bwhRow + 5, ttdColStart).alignment = { horizontal: 'center' };
 
-      // ATUR LEBAR KOLOM SESUAI SPESIFIKASI:
-      ws.getColumn(1).width = 4.5;   // NO
-      ws.getColumn(2).width = 27.6;  // LEBAR KOLOM NAMA / NIP TEPAT 27.6 SAMPAI BAWAH
-      ws.getColumn(3).width = 6.5;   // GOL
-      ws.getColumn(4).width = 3.5;   // M/P
-      ws.getColumn(5).width = 3.5;   // J/F
+      // ATUR LEBAR KOLOM SESUAI SPESIFIKASI (Kolom identitas diperkecil ngepas agar kolom tanggal lebih lebar):
+      ws.getColumn(1).width = 3.8;   // NO (dirampingkan)
+      ws.getColumn(2).width = 24.5;  // NAMA / NIP (pas presisi dengan "Rinni Juliati Simanungkalit, S.Pd.")
+      ws.getColumn(3).width = 4.2;   // GOL (dikecilkan dari 6.5 menjadi 4.2, pas untuk "III/d" / "IV/a")
+      ws.getColumn(4).width = 2.8;   // M/P
+      ws.getColumn(5).width = 2.8;   // J/F
       
-      // LEBAR KOTAK TANGGAL OTOMATIS SESUAI NILAI INPUT (Konversi pt ke unit lebar karakter Excel: 35pt ≈ 6.0)
-      const lebarCharExcel = Math.max(2.6, (ukuranCustom.lebarTgl / 35) * 6.0);
+      // LEBAR KOTAK TANGGAL OTOMATIS SESUAI NILAI INPUT (Konversi pt ke unit lebar karakter Excel)
+      const lebarCharExcel = Math.max(2.6, (ukuranCustom.lebarTgl / 35) * 6.5);
       for (let i = 0; i < jmlHari; i++) {
         ws.getColumn(6 + i).width = parseFloat(lebarCharExcel.toFixed(1));
       }
-      ws.getColumn(pctCol).width = 4.5;
+      ws.getColumn(pctCol).width = 3.8;
       
       // Kolom S, I, C, DL, TB, TK
       for (let i = 1; i <= 6; i++) {
-        ws.getColumn(pctCol + i).width = 3.8;
+        ws.getColumn(pctCol + i).width = 3.2;
       }
-      ws.getColumn(ketCol).width = 9.5;
+      ws.getColumn(ketCol).width = 5.8; // KET (dikecilkan dari 9.5 menjadi 5.8, pas untuk "PNS" / "PPPK")
 
       // Generate & Simpan Berkas XLSX
       const buffer = await workbook.xlsx.writeBuffer();
